@@ -8,39 +8,49 @@ export default class ShowTab {
     gridGray: 'src/images/grid_gray.svg'
   };
 
-  constructor($parent) {
+  constructor($parent, props) {
     this.$parent = $parent;
     this.$mainEle = document.createElement('div');
     this.$mainEle.className = 'show-tab';
 
-    this.$parent.insertAdjacentElement('beforeend', this.$mainEle);
+    this.props = props;
 
-    tabStore.register(this.render.bind(this));
+    this.$parent.insertAdjacentElement('beforeend', this.$mainEle);
   }
 
   render() {
-    this.$mainEle.innerHTML = this.template();
-    this.setEvent();
+    const { activeShowTab } = this.props;
+
+    this.$mainEle.innerHTML = this.template(activeShowTab);
+    this.setEvent(activeShowTab);
   }
 
-  template() {
-    const { activeShowTab } = tabStore.getState();
+  template(activeShowTab) {
     const { listBlue, listGray, gridBlue, gridGray } = this.#imgSrc;
 
     return /* html */ `
-      <img class="show-tab-btn show-tab__list" src="${activeShowTab === 'list' ? listBlue : listGray}">
-      <img class="show-tab-btn show-tab__grid" src="${activeShowTab === 'grid' ? gridBlue : gridGray}">
+      <img class="show-tab-btn show-tab__list" src="${
+        activeShowTab === 'list' ? listBlue : listGray
+      }">
+      <img class="show-tab-btn show-tab__grid" src="${
+        activeShowTab === 'grid' ? gridBlue : gridGray
+      }">
     `;
   }
 
-  setEvent() {
+  setEvent(activeShowTab) {
     this.$mainEle.addEventListener('click', ({ target }) => {
       const targetClassList = target.classList;
-      const { activeShowTab } = tabStore.getState();
 
-      if (targetClassList.contains('show-tab__grid') && activeShowTab === 'list')
+      if (
+        targetClassList.contains('show-tab__grid') &&
+        activeShowTab === 'list'
+      )
         tabStore.dispatch({ type: 'toggleShowTab', payload: 'grid' });
-      if (targetClassList.contains('show-tab__list') && activeShowTab === 'grid')
+      if (
+        targetClassList.contains('show-tab__list') &&
+        activeShowTab === 'grid'
+      )
         tabStore.dispatch({ type: 'toggleShowTab', payload: 'list' });
     });
   }
