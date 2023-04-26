@@ -10,8 +10,9 @@ const INIT_TAB_STATE = {
 export const tabStore = new Store(INIT_TAB_STATE, tabReducer);
 
 const INIT_GRID_PAGE_STATE = {
-  all: { currentPage: null, totalPages: null },
-  subscribed: { currentPage: null, totalPages: null }
+  pressTabType: 'all',
+  currentPage: 0,
+  totalPages: null
 };
 
 export const gridPageStore = new Store(INIT_GRID_PAGE_STATE, gridPageReducer);

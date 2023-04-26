@@ -11,21 +11,29 @@ export const tabReducer = (state, action) => {
   }
 };
 
+export const GRID_PAGE_ACTION_TYPES = {
+  INIT_STATE: 'INIT_STATE',
+  NEXT_PAGE: 'NEXT_PAGE',
+  BEFORE_PAGE: 'BEFORE_PAGE'
+};
+
 export const gridPageReducer = (state, action) => {
+  const { INIT_STATE, NEXT_PAGE, BEFORE_PAGE } = GRID_PAGE_ACTION_TYPES;
+
   switch (action.type) {
-    case 'initGridPage': {
-      const { pressTabType, currentPage, totalPages } = action.payload;
-      return { ...state, [pressTabType]: { currentPage, totalPages } };
+    case INIT_STATE: {
+      const { pressTabType, totalPages } = action.payload;
+      return { ...state, pressTabType, currentPage: 0, totalPages };
     }
-    case 'nextPage': {
-      const { pressTabType, currentPage, totalPages } = action.payload;
+    case NEXT_PAGE: {
+      const { currentPage, totalPages } = state;
       const newPage = currentPage + 1 === totalPages ? currentPage : currentPage + 1;
-      return { ...state, [pressTabType]: { currentPage: newPage, totalPages } };
+      return { ...state, currentPage: newPage };
     }
-    case 'beforePage': {
-      const { pressTabType, currentPage, totalPages } = action.payload;
-      const newPage = currentPage - 1 === -1 ? 0 : currentPage - 1;
-      return { ...state, [pressTabType]: { currentPage: newPage, totalPages } };
+    case BEFORE_PAGE: {
+      const { currentPage } = state;
+      const newPage = currentPage === 0 ? 0 : currentPage - 1;
+      return { ...state, currentPage: newPage };
     }
     default:
       return state;
@@ -55,7 +63,10 @@ export const listPageReducer = (state, action) => {
   switch (action.type) {
     case 'initListPage': {
       const { pressTabType, categories } = action.payload;
-      return { ...state, [pressTabType]: { currentCategory: categories[0], currentItemIdx: 0 } };
+      return {
+        ...state,
+        [pressTabType]: { currentCategory: categories[0], currentItemIdx: 0 }
+      };
     }
     case 'nextPage': {
       const { pressTabType } = action.payload;
@@ -112,7 +123,10 @@ export const listPageReducer = (state, action) => {
       if (pressTabType === 'all') {
         return {
           ...state,
-          [pressTabType]: { currentCategory: categories[targetCategoryIdx], currentItemIdx: 0 }
+          [pressTabType]: {
+            currentCategory: categories[targetCategoryIdx],
+            currentItemIdx: 0
+          }
         };
       }
     }
