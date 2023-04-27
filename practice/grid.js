@@ -68,11 +68,10 @@ export default class Grid {
     else $nextBtn.classList.remove('hidden');
 
     console.log(gridStore.getListeners());
-    // if (this.unregister) this.unregister();
   }
 
   remove() {
-    if (this.unregister) this.unregister();
+    if (!this.unregister) return;
     this.unregister();
     this.$mainEle.remove();
   }
