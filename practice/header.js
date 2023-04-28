@@ -16,34 +16,30 @@ export default class Header {
     this.$parent.insertAdjacentElement('afterbegin', this.$mainEle);
   }
 
-  remove() {
-    this.$mainEle.remove();
+  render() {
+    this.$mainEle.innerHTML = this.template();
+    this.setEvent();
   }
 
-  render() {
+  template() {
     const { activePressTab, activeShowTab } = tabStore.getState();
 
-    this.$mainEle.innerHTML = this.template(activePressTab, activeShowTab);
-    this.setEvent(activePressTab, activeShowTab);
-  }
-
-  template(activePressTab, activeShowTab) {
     const { listBlue, listGray, gridBlue, gridGray } = this.#imgSrc;
     return `
-      <div class="press-tab">
-        <span class="press-tab-btn press-tab__all ${
-          activePressTab === 'all' ? 'active' : ''
-        }">전체 언론사</span>
-        <span class="press-tab-btn press-tab__subscribed ${
-          activePressTab === 'subscribed' ? 'active' : ''
-        }">내가 구독한 언론사</span>
-        <img class="show-tab-btn show-tab__list" src="${activeShowTab === 'list' ? listBlue : listGray}">
-        <img class="show-tab-btn show-tab__grid" src="${activeShowTab === 'grid' ? gridBlue : gridGray}">
-      </div>
+    <div class="press-tab">
+    <span class="press-tab-btn press-tab__all ${activePressTab === 'all' ? 'active' : ''}">전체 언론사</span>
+    <span class="press-tab-btn press-tab__subscribed ${
+      activePressTab === 'subscribed' ? 'active' : ''
+    }">내가 구독한 언론사</span>
+    <img class="show-tab-btn show-tab__list" src="${activeShowTab === 'list' ? listBlue : listGray}">
+    <img class="show-tab-btn show-tab__grid" src="${activeShowTab === 'grid' ? gridBlue : gridGray}">
+    </div>
     `;
   }
 
-  setEvent(activePressTab, activeShowTab) {
+  setEvent() {
+    const { activePressTab, activeShowTab } = tabStore.getState();
+
     this.$mainEle.addEventListener('click', ({ target }) => {
       const targetClassList = target.classList;
 
@@ -56,5 +52,9 @@ export default class Header {
       if (targetClassList.contains('show-tab__list') && activeShowTab === 'grid')
         tabStore.dispatch({ type: TAB_ACTION_TYPES.TOGGLE_SHOW_TAB, payload: 'list' });
     });
+  }
+
+  remove() {
+    this.$mainEle.remove();
   }
 }

@@ -3,36 +3,38 @@ import Header from './header.js';
 import { tabStore } from './store.js';
 
 export default class MainContent {
-  constructor($parent, props) {
+  constructor($parent, { store, ...props }) {
     this.$parent = $parent;
     this.$mainEle = document.createElement('main');
     this.$mainEle.id = 'main-content';
 
     this.props = props;
 
-    this.header;
-    this.container;
-
-    tabStore.register(() => this.render());
+    this.children = new Set();
     this.$parent.insertAdjacentElement('beforeend', this.$mainEle);
+
+    this.unregister = tabStore.register(() => this.render());
   }
 
   render() {
+    this.removeChildren();
+    this.renderChildren();
+  }
+
+  renderChildren() {
     const { pressData } = this.props;
     const { activePressTab, activeShowTab } = tabStore.getState();
 
-    this.removeChildren();
-    this.header = new Header(this.$mainEle);
-    this.container = new Container(this.$mainEle, { activePressTab, activeShowTab, pressData });
+    this.children.add(new Header(this.$mainEle));
+    this.children.add(new Container(this.$mainEle, { activePressTab, activeShowTab, pressData }));
 
-    this.header.render();
-    this.container.render();
+    this.children.forEach((child) => child?.render());
   }
 
   removeChildren() {
-    if (!this.header || !this.container) return;
+    if (this.children.size === 0) return;
 
-    this.header.remove();
-    this.container.remove();
+    this.children.forEach((child) => child?.remove());
+    this.children.clear();
   }
 }
