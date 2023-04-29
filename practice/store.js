@@ -9,11 +9,13 @@ function createStore({ initState = {}, reducer }) {
   function dispatch(action) {
     state = reducer(state, action);
     listeners.forEach((listener) => listener());
+
     return action;
   }
 
   function register(listener) {
     listeners.push(listener);
+
     return () => {
       const index = listeners.indexOf(listener);
       listeners.splice(index, 1);

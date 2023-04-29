@@ -28,13 +28,13 @@ export default class MainContent {
     this.children.add(new Header(this.$mainEle));
     this.children.add(new Container(this.$mainEle, { activePressTab, activeShowTab, pressData }));
 
-    this.children.forEach((child) => child?.render());
+    this.children.forEach((child) => child.render());
   }
 
   removeChildren() {
     if (this.children.size === 0) return;
 
-    this.children.forEach((child) => child?.remove());
+    this.children.forEach((child) => child.remove());
     this.children.clear();
   }
 }

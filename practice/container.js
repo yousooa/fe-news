@@ -8,26 +8,40 @@ export default class Container {
 
     this.props = props;
 
-    this.allGrid;
+    this.children = new Set();
     this.$parent.insertAdjacentElement('beforeend', this.$mainEle);
   }
 
   render() {
+    this.removeChildren();
+    this.renderChildren();
+  }
+
+  renderChildren() {
     const { pressData, activePressTab, activeShowTab } = this.props;
 
-    if (activePressTab === 'all' && activeShowTab === 'grid') {
-      this.allGrid = new Grid(this.$mainEle, {
-        pressData,
-        activePressTab,
-        activeShowTab
-      });
-      this.allGrid.render();
+    if (activeShowTab === 'grid') {
+      this.children.add(
+        new Grid(this.$mainEle, {
+          pressData,
+          activePressTab,
+          activeShowTab
+        })
+      );
     }
+
+    this.children.forEach((child) => child.render());
   }
 
   remove() {
     this.$mainEle.remove();
-    if (!this.allGrid) return;
-    this.allGrid.remove();
+    this.removeChildren();
+  }
+
+  removeChildren() {
+    if (this.children.size === 0) return;
+
+    this.children.forEach((child) => child.remove());
+    this.children.clear();
   }
 }

@@ -1,8 +1,9 @@
 import { gridStore, GRID_ACTION_TYPES } from './store.js';
 
-export default class Grid {
-  #gridItemCount = 24;
+const isFirstPage = (currentPage) => currentPage === 0;
+const isLastPage = (currentPage, totalPages) => currentPage === totalPages - 1;
 
+export default class Grid {
   #imgSrc = {
     beforeBtn: '../src/images/before_btn.svg',
     nextBtn: '../src/images/next_btn.svg'
@@ -11,11 +12,12 @@ export default class Grid {
   constructor($parent, props) {
     this.$parent = $parent;
     this.$mainEle = document.createElement('section');
-    this.$mainEle.className = `main-content__grid`;
+    this.$mainEle.className = 'main-content__grid';
 
     this.props = props;
 
     this.$parent.insertAdjacentElement('beforeend', this.$mainEle);
+
     this.unregister = gridStore.register(() => this.displayBtn());
   }
 
@@ -29,10 +31,10 @@ export default class Grid {
     const { currentPage, totalPages } = gridStore.getState();
 
     return `
-      <div class="main-content__grid-before-btn ${currentPage === 0 ? 'hidden' : ''}">
+      <div class="main-content__grid-before-btn ${isFirstPage(currentPage) ? 'hidden' : ''}">
         <img id="grid-before-btn" src="${beforeBtn}" alt="before grid page" />
       </div>
-      <div class="main-content__grid-next-btn ${currentPage === totalPages - 1 ? 'hidden' : ''}">
+      <div class="main-content__grid-next-btn ${isLastPage(currentPage, totalPages) ? 'hidden' : ''}">
         <img id="grid-next-btn" src="${nextBtn}" alt="next grid page" />
       </div>
       <div class="main-content__grid-wrapper">
@@ -61,10 +63,10 @@ export default class Grid {
     const $beforeBtn = this.$mainEle.querySelector('.main-content__grid-before-btn');
     const $nextBtn = this.$mainEle.querySelector('.main-content__grid-next-btn');
 
-    if (currentPage === 0) $beforeBtn.classList.add('hidden');
+    if (isFirstPage(currentPage)) $beforeBtn.classList.add('hidden');
     else $beforeBtn.classList.remove('hidden');
 
-    if (currentPage === totalPages - 1) $nextBtn.classList.add('hidden');
+    if (isLastPage(currentPage, totalPages)) $nextBtn.classList.add('hidden');
     else $nextBtn.classList.remove('hidden');
 
     console.log(gridStore.getListeners());
@@ -72,6 +74,7 @@ export default class Grid {
 
   remove() {
     if (!this.unregister) return;
+
     this.unregister();
     this.$mainEle.remove();
   }
