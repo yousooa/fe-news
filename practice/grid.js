@@ -3,7 +3,7 @@ import PressGrid from './pressGrid.js';
 
 const isFirstPage = (currentPage) => currentPage === 0;
 const isLastPage = (currentPage, totalPages) => currentPage === totalPages - 1;
-const getDataSlices = (arr, count = 1) => {
+const getDataSlices = ({ arr, count = 1 }) => {
   const dataSlices = [];
 
   for (let i = 0; i < arr.length; i += count) {
@@ -30,27 +30,42 @@ export default class Grid {
 
     this.props = props;
 
-    const { pressData, activePressTab } = props;
-    this.setDataSlices(pressData, activePressTab);
-    const totalPages = this.getTotalPages();
-
     this.children = new Set();
     this.$parent.insertAdjacentElement('beforeend', this.$mainEle);
 
-    gridStore.dispatch({
-      type: GRID_ACTION_TYPES.INIT_STATE,
-      payload: { pressTab: activePressTab, totalPages }
-    });
-    this.unregister = gridStore.register(() => {
+    const { pressData, activePressTab } = this.props;
+    this.initGrid(pressData, activePressTab);
+
+    this.unregisterGrid = gridStore.register(() => {
       this.displayBtn();
+      this.removeChildren();
+      this.renderChildren();
+    });
+
+    this.unregisterSubscription = subscriptionStore.register(() => {
+      if (activePressTab !== 'mine') return;
+
+      this.initGrid();
       this.removeChildren();
       this.renderChildren();
     });
   }
 
+  initGrid(pressData, activePressTab) {
+    this.setDataSlices(pressData, activePressTab);
+    const totalPages = this.getTotalPages();
+
+    gridStore.dispatch({
+      type: GRID_ACTION_TYPES.INIT_STATE,
+      payload: { pressTab: activePressTab, totalPages }
+    });
+  }
+
   setDataSlices(pressData, activePressTab) {
-    const allPressData = activePressTab === 'all' ? pressData : subscriptionStore.getState().subscriptionList;
-    this.#dataSlices = getDataSlices(allPressData, this.#itemCount);
+    const { subscriptionList } = subscriptionStore.getState();
+    const selectedPressData = activePressTab === 'all' ? pressData : subscriptionList;
+
+    this.#dataSlices = getDataSlices({ arr: selectedPressData, count: this.#itemCount });
   }
 
   getTotalPages() {
@@ -84,10 +99,11 @@ export default class Grid {
   renderChildren() {
     const { currentPage } = gridStore.getState();
     const $gridWrapper = this.$mainEle.querySelector('.main-content__grid-wrapper');
+    const itemsData = this.#dataSlices[currentPage] ?? [];
 
     this.children.add(
       new PressGrid($gridWrapper, {
-        itemsData: this.#dataSlices[currentPage] ?? [],
+        itemsData,
         itemCount: this.#itemCount
       })
     );
@@ -126,8 +142,11 @@ export default class Grid {
   remove() {
     this.$mainEle.remove();
 
-    if (!this.unregister) return;
-    this.unregister();
+    if (!this.unregisterGrid) return;
+    this.unregisterGrid();
+
+    if (!this.unregisterSubscription) return;
+    this.unregisterSubscription();
   }
 
   removeChildren() {
