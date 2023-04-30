@@ -1,4 +1,4 @@
-import { gridStore, GRID_ACTION_TYPES } from './store.js';
+import { gridStore, GRID_ACTION_TYPES, subscriptionStore } from './store.js';
 import PressGrid from './pressGrid.js';
 
 const isFirstPage = (currentPage) => currentPage === 0;
@@ -21,6 +21,8 @@ export default class Grid {
     nextBtn: '../src/images/next_btn.svg'
   };
 
+  #dataSlices;
+
   constructor($parent, props) {
     this.$parent = $parent;
     this.$mainEle = document.createElement('section');
@@ -28,17 +30,31 @@ export default class Grid {
 
     this.props = props;
 
-    const { pressData: allPressData } = props;
-    this.dataSlices = getDataSlices(allPressData, this.#itemCount);
-
-    this.$parent.insertAdjacentElement('beforeend', this.$mainEle);
+    const { pressData, activePressTab } = props;
+    this.setDataSlices(pressData, activePressTab);
+    const totalPages = this.getTotalPages();
 
     this.children = new Set();
+    this.$parent.insertAdjacentElement('beforeend', this.$mainEle);
+
+    gridStore.dispatch({
+      type: GRID_ACTION_TYPES.INIT_STATE,
+      payload: { pressTab: activePressTab, totalPages }
+    });
     this.unregister = gridStore.register(() => {
       this.displayBtn();
       this.removeChildren();
       this.renderChildren();
     });
+  }
+
+  setDataSlices(pressData, activePressTab) {
+    const allPressData = activePressTab === 'all' ? pressData : subscriptionStore.getState().subscriptionList;
+    this.#dataSlices = getDataSlices(allPressData, this.#itemCount);
+  }
+
+  getTotalPages() {
+    return this.#dataSlices.length === 0 ? 1 : this.#dataSlices.length;
   }
 
   render() {
@@ -70,7 +86,10 @@ export default class Grid {
     const $gridWrapper = this.$mainEle.querySelector('.main-content__grid-wrapper');
 
     this.children.add(
-      new PressGrid($gridWrapper, { itemsData: this.dataSlices[currentPage], itemCount: this.#itemCount })
+      new PressGrid($gridWrapper, {
+        itemsData: this.#dataSlices[currentPage] ?? [],
+        itemCount: this.#itemCount
+      })
     );
 
     this.children.forEach((child) => child.render());

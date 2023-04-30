@@ -82,8 +82,8 @@ const gridReducer = (state, action) => {
 
   switch (action.type) {
     case INIT_STATE: {
-      const { pressTabType, totalPages } = action.payload;
-      return { ...state, pressTabType, currentPage: 0, totalPages };
+      const { pressTab, totalPages } = action.payload;
+      return { ...state, pressTab, currentPage: 0, totalPages };
     }
     case NEXT_PAGE: {
       const { currentPage, totalPages } = state;
@@ -101,9 +101,9 @@ const gridReducer = (state, action) => {
 };
 
 const INIT_GRID_STATE = {
-  pressTabType: 'all',
+  pressTab: 'all',
   currentPage: 0,
-  totalPages: 4
+  totalPages: null
 };
 
 export const gridStore = createStore({
