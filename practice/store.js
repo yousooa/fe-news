@@ -4,6 +4,7 @@ function createStore({ initState = {}, reducer }) {
 
   const getState = () => state;
 
+  // * 삭제된 컴포넌트가 등록한 listener가 제대로 삭제됐는지 확인하는 용도, 나중에 삭제 예정
   const getListeners = () => listeners;
 
   function dispatch(action) {
@@ -38,10 +39,22 @@ export const TAB_ACTION_TYPES = {
 export const tabReducer = (state, action) => {
   switch (action.type) {
     case TAB_ACTION_TYPES.TOGGLE_PRESS_TAB: {
-      return { ...state, activePressTab: action.payload };
+      const { activePressTab } = state;
+      let newPressTab;
+
+      if (activePressTab === 'all') newPressTab = 'mine';
+      else if (activePressTab === 'mine') newPressTab = 'all';
+
+      return { ...state, activePressTab: newPressTab };
     }
     case TAB_ACTION_TYPES.TOGGLE_SHOW_TAB: {
-      return { ...state, activeShowTab: action.payload };
+      const { activeShowTab } = state;
+      let newShowTab;
+
+      if (activeShowTab === 'grid') newShowTab = 'list';
+      else if (activeShowTab === 'list') newShowTab = 'grid';
+
+      return { ...state, activeShowTab: newShowTab };
     }
     default:
       return state;
