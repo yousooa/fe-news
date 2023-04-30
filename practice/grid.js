@@ -1,9 +1,21 @@
 import { gridStore, GRID_ACTION_TYPES } from './store.js';
+import PressGrid from './pressGrid.js';
 
 const isFirstPage = (currentPage) => currentPage === 0;
 const isLastPage = (currentPage, totalPages) => currentPage === totalPages - 1;
+const getDataSlices = (arr, count = 1) => {
+  const dataSlices = [];
+
+  for (let i = 0; i < arr.length; i += count) {
+    dataSlices.push(arr.slice(i, i + count));
+  }
+
+  return dataSlices;
+};
 
 export default class Grid {
+  #itemCount = 24;
+
   #imgSrc = {
     beforeBtn: '../src/images/before_btn.svg',
     nextBtn: '../src/images/next_btn.svg'
@@ -16,13 +28,24 @@ export default class Grid {
 
     this.props = props;
 
+    const { pressData: allPressData } = props;
+    this.dataSlices = getDataSlices(allPressData, this.#itemCount);
+
     this.$parent.insertAdjacentElement('beforeend', this.$mainEle);
 
-    this.unregister = gridStore.register(() => this.displayBtn());
+    this.children = new Set();
+    this.unregister = gridStore.register(() => {
+      this.displayBtn();
+      this.removeChildren();
+      this.renderChildren();
+    });
   }
 
   render() {
+    this.removeChildren();
+
     this.$mainEle.innerHTML = this.template();
+    this.renderChildren();
     this.setEvent();
   }
 
@@ -38,9 +61,19 @@ export default class Grid {
         <img id="grid-next-btn" src="${nextBtn}" alt="next grid page" />
       </div>
       <div class="main-content__grid-wrapper">
-        <div class="press-grid"></div>
       </div>
     `;
+  }
+
+  renderChildren() {
+    const { currentPage } = gridStore.getState();
+    const $gridWrapper = this.$mainEle.querySelector('.main-content__grid-wrapper');
+
+    this.children.add(
+      new PressGrid($gridWrapper, { itemsData: this.dataSlices[currentPage], itemCount: this.#itemCount })
+    );
+
+    this.children.forEach((child) => child.render());
   }
 
   setEvent() {
@@ -69,14 +102,19 @@ export default class Grid {
 
     if (isLastPage(currentPage, totalPages)) $nextBtn.classList.add('hidden');
     else $nextBtn.classList.remove('hidden');
-
-    console.log(gridStore.getListeners());
   }
 
   remove() {
-    if (!this.unregister) return;
-
-    this.unregister();
     this.$mainEle.remove();
+
+    if (!this.unregister) return;
+    this.unregister();
+  }
+
+  removeChildren() {
+    if (this.children.size === 0) return;
+
+    this.children.forEach((child) => child.remove());
+    this.children.clear();
   }
 }
