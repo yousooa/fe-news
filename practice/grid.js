@@ -44,16 +44,17 @@ export default class Grid {
   }
 
   setEvent() {
-    this.$mainEle.addEventListener('click', ({ target }) => {
-      if (target.id === 'grid-before-btn')
-        gridStore.dispatch({
-          type: GRID_ACTION_TYPES.BEFORE_PAGE
-        });
+    const actionByTarget = {
+      'grid-before-btn': GRID_ACTION_TYPES.BEFORE_PAGE,
+      'grid-next-btn': GRID_ACTION_TYPES.NEXT_PAGE
+    };
 
-      if (target.id === 'grid-next-btn')
-        gridStore.dispatch({
-          type: GRID_ACTION_TYPES.NEXT_PAGE
-        });
+    this.$mainEle.addEventListener('click', ({ target }) => {
+      const { id } = target;
+
+      if (actionByTarget[id]) {
+        gridStore.dispatch({ type: actionByTarget[id] });
+      }
     });
   }
 
